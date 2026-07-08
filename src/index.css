@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/* Базовая настройка темы и контейнеров */
+.app-container {
+  @apply min-h-screen transition-colors duration-500 flex flex-col items-center justify-center p-4;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+.qr-card {
+  @apply w-full max-w-md border rounded-3xl p-6 shadow-2xl transition-all duration-500;
+  background-color: var(--theme-card);
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+.qr-input {
+  @apply w-full rounded-xl px-4 py-3 text-sm italic mb-4 transition-all;
+  background-color: var(--theme-input-bg);
+  color: var(--theme-text);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &:focus {
+    @apply outline-none;
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 10px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Стили кнопок (Главная сочная кнопка темы) */
+.sparkle-btn {
+  @apply relative font-bold text-sm italic px-6 py-3 rounded-xl cursor-pointer shadow-lg;
+  background-color: var(--theme-btn-bg);
+  color: var(--theme-btn-text);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    @apply scale-105;
+    box-shadow: 0 0 30px 4px var(--theme-accent);
+  }
+
+  &:active {
+    @apply scale-95;
+  }
+}
+
+/* Второстепенные кнопки (Копировать, Выбор цвета) */
+.action-btn {
+  @apply flex items-center justify-center gap-2 font-medium text-sm italic px-5 py-2.5 rounded-xl cursor-pointer shadow-md duration-200;
+  background-color: var(--theme-input-bg);
+  color: var(--theme-text);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &:hover {
+    background-color: var(--theme-btn-bg);
+    color: var(--theme-btn-text);
+  }
+
+  &:active {
+    @apply scale-95;
+  }
+}
+
+.color-picker-label {
+  @apply flex items-center justify-center gap-2 font-medium text-sm italic px-4 py-2 rounded-xl cursor-pointer shadow-md transition-all;
+  background-color: var(--theme-input-bg);
+  color: var(--theme-text);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &:hover {
+    border-color: var(--theme-accent);
+  }
+}
+
+/* Комбинированный виджет прозрачности */
+.split-widget {
+  @apply flex items-center rounded-xl p-0.5 shadow-md;
+  background-color: var(--theme-input-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.split-widget-label {
+  @apply flex items-center gap-2 font-medium text-sm italic px-4 py-1.5 cursor-pointer rounded-lg transition-colors;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.split-widget-divider {
+  @apply w-[1px] h-5 mx-1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.transparent-toggle-btn {
+  @apply mr-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer;
+}
+
+/* Статусы активности переключателя прозрачности */
+.active-status {
+  background-color: #54a06f;
+  @apply text-white shadow-sm;
+}
+
+.inactive-status {
+  @apply text-neutral-400;
+
+  &:hover {
+    @apply text-white;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+@keyframes qrReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(12px);
+    filter: blur(8px);
+  }
+  65% {
+    transform: scale(1.02) translateY(-2px);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-qr-reveal {
+  animation: qrReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
