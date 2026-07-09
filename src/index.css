@@ -121,9 +121,10 @@
 
 /* === Добавить в конец существующего App.css === */
 
-/* === Заменяет предыдущий блок app-container::before/::after === */
-
 .app-container {
+  @apply min-h-screen transition-colors duration-500 flex flex-col items-center justify-center p-4;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
   position: relative;
   overflow: hidden;
   isolation: isolate;
