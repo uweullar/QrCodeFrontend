@@ -156,8 +156,10 @@
 }
 
 .qr-card {
-  backdrop-filter: blur(6px);
+  @apply w-full max-w-md border rounded-3xl p-6 shadow-2xl transition-all duration-500;
   background-color: color-mix(in srgb, var(--theme-card) 92%, transparent);
+  border-color: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
 }
 
 /* === Поле мерцающих звёздочек (компонент SparkleField) === */
