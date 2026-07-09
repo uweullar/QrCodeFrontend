@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "qrcode";
 import { useQr } from "./hooks/useQr";
+import { SparkleField } from "./Sparklefield";
+import { Link } from "react-router-dom";
+import { API_BASE_URL } from "./config";
 
 const THEMES = [
   {
@@ -49,8 +52,6 @@ const THEMES = [
     btnText: "#141822",
   },
 ];
-
-const API_BASE_URL = "http://192.168.1.106:8000";
 
 const SparkleIcon = ({
   className,
@@ -149,7 +150,7 @@ export default function App() {
       if (editingQr) {
         // --- РЕДАКТИРОВАНИЕ СУЩЕСТВУЮЩЕГО КОДА (PUT) ---
         const res = await fetch(`${API_BASE_URL}/api/qr/${editingQr.id}`, {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -279,6 +280,8 @@ export default function App() {
         } as React.CSSProperties
       }
     >
+      <SparkleField count={50} />
+
       <div className="w-full max-w-[430px] flex justify-between items-end px-1 mb-2.5 min-h-[36px]">
         {!isAuthenticated ? (
           <div className="flex gap-3">
@@ -635,6 +638,7 @@ export default function App() {
                   Загрузка данных...
                 </p>
               )}
+
               {error && (
                 <p className="text-sm text-rose-400 font-medium mt-4">
                   ⚠️ Ошибка: {error}
@@ -709,7 +713,6 @@ export default function App() {
                                   : "";
                               setEditingQr(qr);
                               setText(urlText);
-                              // ИСПРАВЛЕНО: Теперь ссылается на динамический API_BASE_URL вместо 127.0.0.1
                               generateQrImage(
                                 `${API_BASE_URL}/r/${qr.short_id}`,
                               );
@@ -736,6 +739,12 @@ export default function App() {
                               />
                             </svg>
                           </button>
+                          <Link
+                            to={`/qr/${qr.id}`}
+                            className="text-[10px] underline opacity-60 hover:opacity-100"
+                          >
+                            Статистика →
+                          </Link>
                         </div>
                       );
                     })

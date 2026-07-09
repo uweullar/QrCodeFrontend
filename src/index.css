@@ -129,3 +129,82 @@
 .animate-qr-reveal {
   animation: qrReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* === Добавить в конец существующего App.css === */
+
+/* === Заменяет предыдущий блок app-container::before/::after === */
+
+.app-container {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Едва заметное дыхание цвета темы — теперь просто мягкий фон, без точек */
+.app-container::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -3;
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--theme-accent) 0%,
+    transparent 45%
+  );
+  opacity: 0.15;
+  filter: blur(80px);
+  animation: auroraPulse 10s ease-in-out infinite alternate;
+}
+
+@keyframes auroraPulse {
+  0% {
+    opacity: 0.11;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+.qr-card {
+  backdrop-filter: blur(6px);
+  background-color: color-mix(in srgb, var(--theme-card) 92%, transparent);
+}
+
+/* === Поле мерцающих звёздочек (компонент SparkleField) === */
+
+.sparkle-field {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle-particle {
+  position: absolute;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px var(--theme-accent));
+  animation: sparkleTwinkle ease-in-out infinite;
+}
+
+@keyframes sparkleTwinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1) rotate(15deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-container::after {
+    animation: none;
+  }
+  .sparkle-particle {
+    animation: none;
+    opacity: 0.25;
+  }
+}
