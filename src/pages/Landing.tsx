@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import { SparkleField } from "../Sparklefield";
-import { THEMES } from "../Themes";
+
+// Тема захардкожена под первую (Cyber Neon) — на лендинге ещё нет
+// авторизованного контекста темы, это нормально для первого экрана.
+const LANDING_THEME = {
+  bg: "#0A0F14",
+  card: "#111823",
+  accent: "#00F2FE",
+  text: "#FFFFFF",
+};
 
 export default function Landing() {
   return (
@@ -8,10 +16,10 @@ export default function Landing() {
       className="app-container"
       style={
         {
-          "--theme-bg": THEMES,
-          "--theme-card": THEMES,
-          "--theme-accent": THEMES,
-          "--theme-text": THEMES,
+          "--theme-bg": LANDING_THEME.bg,
+          "--theme-card": LANDING_THEME.card,
+          "--theme-accent": LANDING_THEME.accent,
+          "--theme-text": LANDING_THEME.text,
         } as React.CSSProperties
       }
     >

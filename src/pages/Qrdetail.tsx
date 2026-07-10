@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { getSavedTheme } from "../Themes";
+import { SparkleField } from "../Sparklefield";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -13,6 +15,7 @@ export default function QrDetail() {
   const [stats, setStats] = useState<QrStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const theme = getSavedTheme(); // подхватываем тему, выбранную в /app
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -38,10 +41,6 @@ export default function QrDetail() {
     fetchStats();
   }, [id]);
 
-  // ВРЕМЕННО: группировка идёт по сырому User-Agent на бэкенде,
-  // поэтому здесь показываем как есть — топ-5 самых частых строк.
-  // Когда на бэке появятся os_family/browser_family — просто поменять
-  // источник данных здесь, разметка ниже не изменится.
   const breakdownEntries = stats
     ? Object.entries(stats.browsers_breakdown)
         .sort((a, b) => b[1] - a[1])
@@ -51,7 +50,22 @@ export default function QrDetail() {
   const maxCount = breakdownEntries.length ? breakdownEntries[0][1] : 1;
 
   return (
-    <div className="app-container">
+    <div
+      className="app-container"
+      style={
+        {
+          "--theme-bg": theme.bg,
+          "--theme-card": theme.card,
+          "--theme-input-bg": theme.inputBg,
+          "--theme-accent": theme.accent,
+          "--theme-text": theme.text,
+          "--theme-btn-bg": theme.btnBg,
+          "--theme-btn-text": theme.btnText,
+        } as React.CSSProperties
+      }
+    >
+      <SparkleField count={44} />
+
       <div className="qr-card" style={{ maxWidth: "480px" }}>
         <Link
           to="/app"
