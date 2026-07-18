@@ -86,7 +86,7 @@ export default function App() {
     try {
       if (editingQr) {
         // --- РЕДАКТИРОВАНИЕ СУЩЕСТВУЮЩЕГО КОДА (PUT) ---
-        const res = await fetch(`${API_BASE_URL}/api/qr/${editingQr.id}`, {
+        const res = await fetch(`${API_BASE_URL}/qr/${editingQr.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export default function App() {
       } else {
         // --- СОЗДАНИЕ НОВОГО ДИНАМИЧЕСКОГО КОДА (POST) ---
         // ИСПРАВЛЕНО: Заменены кавычки на бэктики `
-        const res = await fetch(`${API_BASE_URL}/api/qr/create`, {
+        const res = await fetch(`${API_BASE_URL}/qr/create`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -163,7 +163,7 @@ export default function App() {
     try {
       if (authMode === "login") {
         // ИСПРАВЛЕНО: Заменены кавычки на бэктики `
-        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: username, password }),
@@ -176,7 +176,7 @@ export default function App() {
         fetchMyQrs();
       } else {
         // ИСПРАВЛЕНО: Заменены кавычки на бэктики `
-        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        const res = await fetch(`${API_BASE_URL}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: username, password }),

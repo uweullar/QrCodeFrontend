@@ -26,7 +26,7 @@ export default function QrDetail() {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/qr/${id}/stats`, {
+        const res = await fetch(`${API_BASE_URL}/qr/${id}/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Не удалось загрузить статистику");
