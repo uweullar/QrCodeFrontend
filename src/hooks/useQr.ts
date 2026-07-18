@@ -22,7 +22,7 @@ export const useQr = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/qr/my`, {
+      const res = await fetch(`${API_BASE_URL}/qr/my`, {
         method: "GET",
         headers: getHeaders(),
       });
@@ -44,7 +44,7 @@ export const useQr = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/qr/${qrId}`, {
+      const res = await fetch(`${API_BASE_URL}/qr/${qrId}`, {
         method: "PATCH",
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -66,7 +66,7 @@ export const useQr = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/qr/${qrId}/stats`, {
+      const res = await fetch(`${API_BASE_URL}/qr/${qrId}/stats`, {
         method: "GET",
         headers: getHeaders(),
       });
