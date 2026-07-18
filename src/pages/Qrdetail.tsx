@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getSavedTheme } from "../Themes";
 import { SparkleField } from "../Sparklefield";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from "../config";
 
 interface QrStats {
   total_clicks: number;
