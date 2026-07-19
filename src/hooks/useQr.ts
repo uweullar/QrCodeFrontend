@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { API_BASE_URL } from "../config";
+import { api } from "../api";
 
 export const useQr = () => {
   const [qrCodes, setQrCodes] = useState<any[]>([]);
@@ -7,31 +7,14 @@ export const useQr = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getHeaders = () => {
-    const token = localStorage.getItem("token");
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-    return headers;
-  };
-
   const fetchMyQrs = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/qr/my`, {
-        method: "GET",
-        headers: getHeaders(),
-      });
-      if (!res.ok) throw new Error("Не удалось загрузить QR-коды");
-      const data = await res.json();
-      setQrCodes(data);
+      const res = await api.get("/qr/my");
+      setQrCodes(res.data);
     } catch (err: any) {
-      setError(err.message || "Произошла ошибка");
-      console.error(err);
+      setError(err.response?.data?.detail || "Не удалось загрузить QR-коды");
     } finally {
       setLoading(false);
     }
@@ -44,18 +27,11 @@ export const useQr = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/qr/${qrId}`, {
-        method: "PATCH",
-        headers: getHeaders(),
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Не удалось обновить QR-код");
-      const updatedQr = await res.json();
-      setQrCodes((prev) => prev.map((qr) => (qr.id === qrId ? updatedQr : qr)));
-      return updatedQr;
+      const res = await api.patch(`/qr/${qrId}`, payload);
+      setQrCodes((prev) => prev.map((qr) => (qr.id === qrId ? res.data : qr)));
+      return res.data;
     } catch (err: any) {
-      setError(err.message || "Ошибка обновления");
-      console.error(err);
+      setError(err.response?.data?.detail || "Ошибка обновления");
       throw err;
     } finally {
       setLoading(false);
@@ -66,17 +42,11 @@ export const useQr = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/qr/${qrId}/stats`, {
-        method: "GET",
-        headers: getHeaders(),
-      });
-      if (!res.ok) throw new Error("Не удалось загрузить статистику");
-      const stats = await res.json();
-      setCurrentStats(stats);
-      return stats;
+      const res = await api.get(`/qr/${qrId}/stats`);
+      setCurrentStats(res.data);
+      return res.data;
     } catch (err: any) {
-      setError(err.message || "Ошибка загрузки статистики");
-      console.error(err);
+      setError(err.response?.data?.detail || "Ошибка загрузки статистики");
     } finally {
       setLoading(false);
     }

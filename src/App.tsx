@@ -4,19 +4,15 @@ import QRCode from "qrcode";
 import { useQr } from "./hooks/useQr";
 import { SparkleField } from "./Sparklefield";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "./config";
+import { api } from "./api";
 import { THEMES } from "./Themes";
+import { API_BASE_URL } from "./config";
 
 export default function App() {
   const { qrCodes, loading, error, fetchMyQrs } = useQr();
 
   const [view, setView] = useState<"create" | "history" | "auth">("create");
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
 
   // Состояние для отслеживания редактируемого кода из истории
   const [editingQr, setEditingQr] = useState<any | null>(null);
@@ -37,7 +33,7 @@ export default function App() {
   const [text, setText] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token"); // было "token"
     if (token) setIsAuthenticated(true);
   }, []);
 
@@ -85,40 +81,21 @@ export default function App() {
 
     try {
       if (editingQr) {
-        // --- РЕДАКТИРОВАНИЕ СУЩЕСТВУЮЩЕГО КОДА (PUT) ---
-        const res = await fetch(`${API_BASE_URL}/qr/${editingQr.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ target_url: text, title: editingQr.title }),
+        await api.patch(`/qr/${editingQr.id}`, {
+          target_url: text,
+          title: editingQr.title,
         });
-
-        if (!res.ok) throw new Error("Не удалось обновить ссылку на бэкенде");
-
         alert("Ссылка успешно изменена!");
         setEditingQr(null);
         setText("");
         setQrDataUrl("");
         fetchMyQrs();
       } else {
-        // --- СОЗДАНИЕ НОВОГО ДИНАМИЧЕСКОГО КОДА (POST) ---
-        // ИСПРАВЛЕНО: Заменены кавычки на бэктики `
-        const res = await fetch(`${API_BASE_URL}/qr/create`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ target_url: text, title: "Новый QR" }),
+        const res = await api.post("/qr/create", {
+          target_url: text,
+          title: "Новый QR",
         });
-
-        if (!res.ok) throw new Error("Не удалось сохранить код на бэкенде");
-        const data = await res.json();
-
-        // Зашиваем в QR именно короткую ссылку-редирект с бэкенда!
-        const shortRedirectUrl = `${API_BASE_URL}/r/${data.short_id}`;
+        const shortRedirectUrl = `${API_BASE_URL}/r/${res.data.short_id}`; // это остаётся, т.к. зашивается в сам QR-код как ссылка, а не как API-вызов
         await generateQrImage(shortRedirectUrl);
         fetchMyQrs();
       }
@@ -152,52 +129,11 @@ export default function App() {
     }
   };
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError(null);
-    if (!username.trim() || !password.trim()) {
-      setAuthError("Заполните все поля!");
-      return;
-    }
-
-    try {
-      if (authMode === "login") {
-        // ИСПРАВЛЕНО: Заменены кавычки на бэктики `
-        const res = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: username, password }),
-        });
-        if (!res.ok) throw new Error("Неверный email или пароль");
-        const data = await res.json();
-        localStorage.setItem("token", data.access_token);
-        setIsAuthenticated(true);
-        setView("history");
-        fetchMyQrs();
-      } else {
-        // ИСПРАВЛЕНО: Заменены кавычки на бэктики `
-        const res = await fetch(`${API_BASE_URL}/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: username, password }),
-        });
-        if (!res.ok) throw new Error("Ошибка при регистрации");
-        alert("Успешно! Теперь войдите.");
-        setAuthMode("login");
-      }
-      setPassword("");
-    } catch (err: any) {
-      setAuthError(err.message || "Ошибка соединения");
-    }
-  };
-
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token"); // было "token"
     setIsAuthenticated(false);
     setEditingQr(null);
     setView("create");
-    setUsername("");
-    setPassword("");
     setQrDataUrl("");
     setText("");
   };

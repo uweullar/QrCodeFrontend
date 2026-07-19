@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getSavedTheme } from "../Themes";
 import { SparkleField } from "../Sparklefield";
-import { API_BASE_URL } from "../config";
+import { api } from "../api";
 
 interface QrStats {
   total_clicks: number;
@@ -18,21 +18,17 @@ export default function QrDetail() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token"); // было "token"
       if (!token) {
         setError("Нужно войти в аккаунт, чтобы увидеть статистику.");
         setLoading(false);
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/qr/${id}/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Не удалось загрузить статистику");
-        const data: QrStats = await res.json();
-        setStats(data);
+        const res = await api.get(`/qr/${id}/stats`); // токен добавит интерцептор сам
+        setStats(res.data);
       } catch (err: any) {
-        setError(err.message || "Ошибка соединения");
+        setError(err.response?.data?.detail || "Ошибка соединения");
       } finally {
         setLoading(false);
       }
