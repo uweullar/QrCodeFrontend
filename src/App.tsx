@@ -3,20 +3,30 @@ import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "qrcode";
 import { useQr } from "./hooks/useQr";
 import { SparkleField } from "./Sparklefield";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "./api";
 import { THEMES } from "./Themes";
 import { API_BASE_URL } from "./config";
 
+// Интерфейс для QR кода из истории
+interface QrCodeItem {
+  id: string;
+  short_id: string;
+  target_url: string;
+  title?: string;
+  scan_count?: number;
+  clicks?: number;
+}
+
 export default function App() {
   const { qrCodes, loading, error, fetchMyQrs } = useQr();
+  const navigate = useNavigate();
 
-  const [view, setView] = useState<"create" | "history" | "auth">("create");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [view, setView] = useState<"create" | "history">("create");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [editingQr, setEditingQr] = useState<QrCodeItem | null>(null);
 
-  // Состояние для отслеживания редактируемого кода из истории
-  const [editingQr, setEditingQr] = useState<any | null>(null);
-
+  // Кастомизация тем
   const [currentTheme, setCurrentTheme] = useState(() => {
     const savedThemeId = localStorage.getItem("qr-app-theme");
     if (savedThemeId) {
@@ -26,14 +36,15 @@ export default function App() {
     return THEMES[0];
   });
 
-  const [fillColor, setFillColor] = useState("#2C2C2C");
-  const [backColor, setBackColor] = useState("#FFFFFF");
-  const [isTransparent, setIsTransparent] = useState(true);
-  const [qrDataUrl, setQrDataUrl] = useState("");
-  const [text, setText] = useState("");
+  // Кастомизация самого QR-кода
+  const [fillColor, setFillColor] = useState<string>("#2C2C2C");
+  const [backColor, setBackColor] = useState<string>("#FFFFFF");
+  const [isTransparent, setIsTransparent] = useState<boolean>(true);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [text, setText] = useState<string>("");
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token"); // было "token"
+    const token = localStorage.getItem("access_token");
     if (token) setIsAuthenticated(true);
   }, []);
 
@@ -41,7 +52,6 @@ export default function App() {
     localStorage.setItem("qr-app-theme", currentTheme.id);
   }, [currentTheme]);
 
-  // Чистая функция генерации самой картинки из переданной строки
   const generateQrImage = async (content: string) => {
     try {
       const url = await QRCode.toDataURL(content, {
@@ -58,7 +68,6 @@ export default function App() {
     }
   };
 
-  // Главный метод отправки/обновления данных на бэкенде
   const handleQrSubmit = async () => {
     if (!text.trim()) return;
 
@@ -67,9 +76,7 @@ export default function App() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-
-    console.log("Токен перед отправкой:", token);
+    const token = localStorage.getItem("access_token");
 
     if (!token || token === "undefined" || token === "null") {
       alert(
@@ -95,7 +102,7 @@ export default function App() {
           target_url: text,
           title: "Новый QR",
         });
-        const shortRedirectUrl = `${API_BASE_URL}/r/${res.data.short_id}`; // это остаётся, т.к. зашивается в сам QR-код как ссылка, а не как API-вызов
+        const shortRedirectUrl = `${API_BASE_URL}/r/${res.data.short_id}`;
         await generateQrImage(shortRedirectUrl);
         fetchMyQrs();
       }
@@ -104,7 +111,6 @@ export default function App() {
     }
   };
 
-  // Функция скачивания готового QR-кода в формате PNG
   const downloadQrCode = () => {
     if (!qrDataUrl) return;
     const downloadLink = document.createElement("a");
@@ -130,7 +136,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token"); // было "token"
+    localStorage.removeItem("access_token");
     setIsAuthenticated(false);
     setEditingQr(null);
     setView("create");
@@ -158,50 +164,26 @@ export default function App() {
       <div className="w-full max-w-[430px] flex justify-between items-end px-1 mb-2.5 min-h-[36px]">
         {!isAuthenticated ? (
           <div className="flex gap-3">
-            <button
-              onClick={() => {
-                setView(
-                  view === "auth" && authMode === "login" ? "create" : "auth",
-                );
-                setAuthMode("login");
-              }}
-              className="px-5 py-1.5 rounded-lg text-xs font-medium cursor-pointer border border-white/[0.03]"
+            <Link
+              to="/login"
+              className="px-5 py-1.5 rounded-lg text-xs font-medium cursor-pointer border border-white/[0.03] no-underline flex items-center justify-center"
               style={{
-                backgroundColor:
-                  view === "auth" && authMode === "login"
-                    ? "var(--theme-card)"
-                    : "rgba(255,255,255,0.03)",
-                color:
-                  view === "auth" && authMode === "login"
-                    ? "var(--theme-accent)"
-                    : "rgba(255,255,255,0.4)",
+                backgroundColor: "rgba(255,255,255,0.03)",
+                color: "rgba(255,255,255,0.4)",
               }}
             >
               Вход
-            </button>
-            <button
-              onClick={() => {
-                setView(
-                  view === "auth" && authMode === "register"
-                    ? "create"
-                    : "auth",
-                );
-                setAuthMode("register");
-              }}
-              className="px-5 py-1.5 rounded-lg text-xs font-medium cursor-pointer border border-white/[0.03]"
+            </Link>
+            <Link
+              to="/register"
+              className="px-5 py-1.5 rounded-lg text-xs font-medium cursor-pointer border border-white/[0.03] no-underline flex items-center justify-center"
               style={{
-                backgroundColor:
-                  view === "auth" && authMode === "register"
-                    ? "var(--theme-card)"
-                    : "rgba(255,255,255,0.03)",
-                color:
-                  view === "auth" && authMode === "register"
-                    ? "var(--theme-accent)"
-                    : "rgba(255,255,255,0.4)",
+                backgroundColor: "rgba(255,255,255,0.03)",
+                color: "rgba(255,255,255,0.4)",
               }}
             >
               Регистрация
-            </button>
+            </Link>
           </div>
         ) : (
           <span className="text-[11px] opacity-25 italic px-1 self-center">
@@ -220,8 +202,7 @@ export default function App() {
                 setView("history");
                 fetchMyQrs();
               } else {
-                setAuthMode("login");
-                setView("auth");
+                navigate("/login");
               }
             }}
             className="text-xl cursor-pointer opacity-70 hover:opacity-100 transition-opacity select-none"
@@ -284,7 +265,7 @@ export default function App() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 className="qr-input"
-                placeholder="Введите text или ссылку..."
+                placeholder="Введите текст или ссылку..."
               />
 
               <div className="flex flex-wrap gap-3 justify-center items-center my-4">
@@ -351,7 +332,6 @@ export default function App() {
                     >
                       <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
                     </svg>
-
                     <svg
                       className="absolute -top-1.5 left-1/3 w-2.5 h-2.5 text-[#fffdef]"
                       style={{ filter: "drop-shadow(0 0 6px #fffdef)" }}
@@ -360,7 +340,6 @@ export default function App() {
                     >
                       <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
                     </svg>
-
                     <svg
                       className="absolute -top-4 right-4 w-4.5 h-4.5 text-[#fffdef]"
                       style={{ filter: "drop-shadow(0 0 10px #fffdef)" }}
@@ -369,7 +348,6 @@ export default function App() {
                     >
                       <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
                     </svg>
-
                     <svg
                       className="absolute -bottom-2 left-12 w-3 h-3 text-[#fffdef]"
                       style={{ filter: "drop-shadow(0 0 6px #fffdef)" }}
@@ -378,7 +356,6 @@ export default function App() {
                     >
                       <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
                     </svg>
-
                     <svg
                       className="absolute -bottom-3 right-8 w-4 h-4 text-[#fffdef]"
                       style={{ filter: "drop-shadow(0 0 8px #fffdef)" }}
@@ -438,51 +415,6 @@ export default function App() {
             </motion.div>
           )}
 
-          {view === "auth" && (
-            <motion.form
-              key="auth"
-              onSubmit={handleAuth}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="w-full flex flex-col text-left mt-1"
-            >
-              <h2
-                className="text-base font-bold mb-4 italic"
-                style={{ color: "var(--theme-accent)" }}
-              >
-                {authMode === "login"
-                  ? "Вход в аккаунт"
-                  : "Регистрация в системе"}
-              </h2>
-              <input
-                type="text"
-                placeholder="user@gmail.com"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="qr-input"
-              />
-              <input
-                type="password"
-                placeholder="Пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="qr-input"
-              />
-              {authError && (
-                <p className="text-xs text-rose-400 font-bold mb-3">
-                  ⚠️ {authError}
-                </p>
-              )}
-              <button
-                type="submit"
-                className="sparkle-btn w-full text-center py-3 mt-2"
-              >
-                {authMode === "login" ? "Войти" : "Зарегистрироваться"}
-              </button>
-            </motion.form>
-          )}
-
           {view === "history" && (
             <motion.div
               key="history"
@@ -525,7 +457,7 @@ export default function App() {
                       Здесь пока пусто.
                     </p>
                   ) : (
-                    qrCodes.map((qr: any) => {
+                    (qrCodes as QrCodeItem[]).map((qr) => {
                       let displayTitle = qr.title;
                       if (!displayTitle || displayTitle === "string") {
                         try {
@@ -547,7 +479,11 @@ export default function App() {
                         <div
                           key={qr.id}
                           className="p-3.5 rounded-xl border border-white/[0.03] flex justify-between items-center gap-3 transition-all duration-300 hover:border-white/[0.08]"
-                          style={{ backgroundColor: "var(--theme-input-bg)" }}
+                          style={
+                            {
+                              backgroundColor: "var(--theme-input-bg)",
+                            } as React.CSSProperties
+                          }
                         >
                           <div className="flex flex-col gap-1.5 truncate max-w-[70%]">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -556,10 +492,12 @@ export default function App() {
                               </span>
                               <span
                                 className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold opacity-60"
-                                style={{
-                                  backgroundColor: "rgba(255,255,255,0.05)",
-                                  color: "var(--theme-accent)",
-                                }}
+                                style={
+                                  {
+                                    backgroundColor: "rgba(255,255,255,0.05)",
+                                    color: "var(--theme-accent)",
+                                  } as React.CSSProperties
+                                }
                               >
                                 /r/{qr.short_id}
                               </span>
@@ -578,46 +516,50 @@ export default function App() {
                             </p>
                           </div>
 
-                          <button
-                            onClick={() => {
-                              const urlText =
-                                qr.target_url && qr.target_url !== "string"
-                                  ? qr.target_url
-                                  : "";
-                              setEditingQr(qr);
-                              setText(urlText);
-                              generateQrImage(
-                                `${API_BASE_URL}/r/${qr.short_id}`,
-                              );
-                              setView("create");
-                            }}
-                            title="Редактировать код"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-white/[0.05] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-                            style={{
-                              backgroundColor: "rgba(255,255,255,0.02)",
-                              color: "var(--theme-accent)",
-                            }}
-                          >
-                            <svg
-                              className="w-4 h-4 transform rotate-180"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              strokeWidth="2.5"
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const urlText =
+                                  qr.target_url && qr.target_url !== "string"
+                                    ? qr.target_url
+                                    : "";
+                                setEditingQr(qr);
+                                setText(urlText);
+                                generateQrImage(
+                                  `${API_BASE_URL}/r/${qr.short_id}`,
+                                );
+                                setView("create");
+                              }}
+                              title="Редактировать код"
+                              className="w-8 h-8 rounded-lg flex items-center justify-center border border-white/[0.05] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+                              style={
+                                {
+                                  backgroundColor: "rgba(255,255,255,0.02)",
+                                  color: "var(--theme-accent)",
+                                } as React.CSSProperties
+                              }
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                              />
-                            </svg>
-                          </button>
-                          <Link
-                            to={`/qr/${qr.id}`}
-                            className="text-[10px] underline opacity-60 hover:opacity-100"
-                          >
-                            Статистика →
-                          </Link>
+                              <svg
+                                className="w-4 h-4 transform rotate-180"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                strokeWidth="2.5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                                />
+                              </svg>
+                            </button>
+                            <Link
+                              to={`/qr/${qr.id}`}
+                              className="text-[10px] underline opacity-60 hover:opacity-100"
+                            >
+                              Статистика →
+                            </Link>
+                          </div>
                         </div>
                       );
                     })
