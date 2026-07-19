@@ -2,14 +2,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
-
-const THEME = {
-  bg: "#0A0F14",
-  card: "#111823",
-  inputBg: "#0D1420",
-  accent: "#00F2FE",
-  text: "#FFFFFF",
-};
+import { getSavedTheme } from "../Themes";
+import { SparkleField } from "../Sparklefield";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,6 +11,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const theme = getSavedTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,14 +33,18 @@ export default function Register() {
       className="app-container"
       style={
         {
-          "--theme-bg": THEME.bg,
-          "--theme-card": THEME.card,
-          "--theme-input-bg": THEME.inputBg,
-          "--theme-accent": THEME.accent,
-          "--theme-text": THEME.text,
+          "--theme-bg": theme.bg,
+          "--theme-card": theme.card,
+          "--theme-input-bg": theme.inputBg,
+          "--theme-accent": theme.accent,
+          "--theme-text": theme.text,
+          "--theme-btn-bg": theme.btnBg,
+          "--theme-btn-text": theme.btnText,
         } as React.CSSProperties
       }
     >
+      <SparkleField count={44} />
+
       <div className="qr-card" style={{ maxWidth: "400px" }}>
         <h1 className="text-xl font-bold italic mb-6">Регистрация</h1>
 
